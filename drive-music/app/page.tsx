@@ -62,6 +62,7 @@ export default function Home() {
           >
             Documentation
           </a>
+          <p>　編集</p>
         </div>
       </main>
     </div>
