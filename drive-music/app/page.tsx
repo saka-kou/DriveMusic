@@ -1,15 +1,8 @@
-import Image from "next/image";
-export default function Header() {
+export default function Home() {
   return (
-    <header>
-      <h1>ヘッダーです</h1>
-    </header>
-  )
+    <main>
+      <h1>DriveMusic</h1>
+      <p>音楽を楽しみましょう。</p>
+    </main>
+  );
 }
-// export default function Home() {
-//   return (
-//     <main>
-//       <h1>DriveMusic</h1>
-//     </main>
-//   );
-// }
