@@ -73,6 +73,7 @@ export default function LocationButton() {
                 )}
             </section>
 
+
             {currentTime && (
                 <p>
                     取得時刻: {currentTime.toLocaleTimeString("ja-JP")}
