@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { getTimeOfDay } from "../context/getTimeOfDay";
+
 
 type Coordinates = {
     latitude: number;
@@ -48,21 +50,36 @@ export default function LocationButton() {
         );
     }
 
+    //時刻の取得
+    const [currentTime] = useState(() => new Date());
+    const timeOfDay = getTimeOfDay(currentTime);
+
+
     return (
-        <section>
-            <button type="button" onClick={getCurrentLocation}>
-                現在地を取得ボタン
-            </button>
+        <>
+            <section>
+                <button type="button" onClick={getCurrentLocation}>
+                    現在地を取得ボタン
+                </button>
 
-            <p role="status">{message}</p>
+                <p role="status">{message}</p>
 
-            {coordinates && (
+                {coordinates && (
+                    <p>
+                        緯度: {coordinates.latitude}
+                        <br />
+                        経度: {coordinates.longitude}
+                    </p>
+                )}
+            </section>
+
+            {currentTime && (
                 <p>
-                    緯度: {coordinates.latitude}
+                    取得時刻: {currentTime.toLocaleTimeString("ja-JP")}
                     <br />
-                    経度: {coordinates.longitude}
+                    時間帯: {timeOfDay}
                 </p>
             )}
-        </section>
+        </>
     );
 }
