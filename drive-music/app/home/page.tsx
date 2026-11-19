@@ -1,10 +1,11 @@
 import styles from "./home.module.css";
+import LocationButton from "@/features/location/LocationButton"
 
 export default function music() {
     return (
         <main className={styles.page}>
-            <h1 className={styles.heading}>ホーム</h1>
-            <p className={styles.text}>ホームです</p>
+
+            <LocationButton />
         </main>
     )
 }

@@ -1,4 +1,4 @@
-import LocationButton from "../features/location/LocationButton";
+
 
 
 export default function Home() {
@@ -6,7 +6,6 @@ export default function Home() {
     <main>
       <h1>DriveMusic</h1>
       <p>音楽を楽しみましょう。</p>
-      <LocationButton />
     </main>
   );
 }
