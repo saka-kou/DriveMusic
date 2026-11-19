@@ -1,6 +1,6 @@
 export type TimeOfDay = "朝" | "昼" | "夕方" | "夜";
 
-export function getTimeOfDay(date: Date = new Date()): TimeOfDay {
+export function getTimeOfDay(date: Date): TimeOfDay {
     const hour = date.getHours();
 
     if (hour >= 5 && hour < 11) {
