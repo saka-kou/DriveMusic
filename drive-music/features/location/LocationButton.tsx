@@ -33,11 +33,30 @@ type WeatherApiResponse = {
     error?: string;
 };
 
+type AreaApiResponse = {
+    status?: "matched" | "out_of_area";
+    message?: string;
+    areas?: Array<{
+        name: string;
+        category: string;
+        distanceMeters?: number;
+    }>;
+    error?: string;
+};
+
+type AreaResult = {
+    category: string;
+    name?: string;
+};
+
+const AREA_API_URL = "http://localhost:8080/api/areas/check.php";
+
 export default function LocationButton() {
-    const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
     const [message, setMessage] = useState("");
     const [weather, setWeather] = useState<Weather | null>(null);
     const [weatherMessage, setWeatherMessage] = useState("");
+    const [areaResult, setAreaResult] = useState<AreaResult | null>(null);
+    const [areaMessage, setAreaMessage] = useState("");
 
     async function getWeather(location: Coordinates) {
         const params = new URLSearchParams({
@@ -75,6 +94,40 @@ export default function LocationButton() {
         }
     }
 
+    async function getArea(location: Coordinates) {
+        setAreaResult(null);
+        setAreaMessage("登録エリアを確認しています…");
+
+        try {
+            const response = await fetch(AREA_API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(location),
+                cache: "no-store",
+            });
+            const data = (await response.json()) as AreaApiResponse;
+            if (!response.ok) {
+                throw new Error(data.error ?? "エリア判定APIへの接続に失敗しました。");
+            }
+            if (typeof data.message !== "string") {
+                throw new Error("エリア判定の結果を読み取れませんでした。");
+            }
+
+            setAreaResult({
+                category: data.message,
+                name: data.areas?.[0]?.name,
+            });
+            setAreaMessage("");
+        } catch (error) {
+            setAreaResult(null);
+            setAreaMessage(
+                error instanceof Error
+                    ? error.message
+                    : "エリアを判定できませんでした。ApacheとMySQLの状態を確認してください。",
+            );
+        }
+    }
+
 
     function getCurrentLocation() {
         if (!navigator.geolocation) {
@@ -90,14 +143,15 @@ export default function LocationButton() {
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude,
                 };
-                setCoordinates(location);
                 setMessage("");
                 void getWeather(location);
+                void getArea(location);
             },
             (error) => {
-                setCoordinates(null);
                 setWeather(null);
                 setWeatherMessage("");
+                setAreaResult(null);
+                setAreaMessage("");
 
                 if (error.code === error.PERMISSION_DENIED) {
                     setMessage("位置情報の利用が許可されませんでした。");
@@ -133,12 +187,13 @@ export default function LocationButton() {
 
                 <p role="status">{message}</p>
 
-                {coordinates && (
-                    <p>
-                        緯度: {coordinates.latitude}
-                        <br />
-                        経度: {coordinates.longitude}
-                    </p>
+                {areaMessage && <p role="status">{areaMessage}</p>}
+                {areaResult && (
+                    <section aria-label="現在地のエリア判定">
+                        <h2>現在地のエリア</h2>
+                        <p>{areaResult.category}</p>
+                        {areaResult.name && <p>{areaResult.name}</p>}
+                    </section>
                 )}
 
                 {weatherMessage && <p role="status">{weatherMessage}</p>}
