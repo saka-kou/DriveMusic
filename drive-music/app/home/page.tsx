@@ -4,7 +4,7 @@ import LocationButton from "@/features/location/LocationButton"
 export default function music() {
     return (
         <main className={styles.page}>
-            <h1 className={styles.heading}>ホーム</h1>
+
             <LocationButton />
         </main>
     )
