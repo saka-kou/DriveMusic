@@ -10,9 +10,20 @@ export async function GET(request: Request) {
         );
     }
 
-    // Spoitifyの認証情報
-    const clientId = process.env.SPOTIFY_CLIENT_ID!;
-    const clientSecret = process.env.SPOTIFY_CLIENT_SECRET!;
+    // Spotify の認証情報はサーバー専用の環境変数から取得する。
+    const clientId = process.env.SPOTIFY_CLIENT_ID?.trim();
+    const clientSecret = process.env.SPOTIFY_CLIENT_SECRET?.trim();
+
+    if (!clientId || !clientSecret) {
+        return Response.json(
+            {
+                error: "Spotify API の認証情報が設定されていません",
+                error_description:
+                    "プロジェクト直下の .env.local に SPOTIFY_CLIENT_ID と SPOTIFY_CLIENT_SECRET を設定してください。",
+            },
+            { status: 500 }
+        );
+    }
 
     //アクセストークンを取得
     const auth = Buffer.from(
