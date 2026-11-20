@@ -1,15 +1,15 @@
 export async function GET() {
-    const clientId = process.env.SPOTIFY_CLIENT_ID;
-    const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+    const clientId = process.env.SPOTIFY_CLIENT_ID?.trim();
+    const clientSecret = process.env.SPOTIFY_CLIENT_SECRET?.trim();
 
-    console.log("CLIENT ID exists:", !!clientId);
-    console.log("CLIENT SECRET exists:", !!clientSecret);
+    if (!clientId || !clientSecret) {
+        return Response.json(
+            { error: "Spotify API credentials are not configured" },
+            { status: 500 }
+        );
+    }
 
-    const credentials = Buffer.from(
-        `${clientId}:${clientSecret}`
-    ).toString("base64");
-
-    console.log("Credentials created:", !!credentials);
+    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
 
     const response = await fetch(
         "https://accounts.spotify.com/api/token",
@@ -27,9 +27,13 @@ export async function GET() {
 
     const data = await response.json();
 
-    console.log("Spotify response:", data);
-
-    return Response.json(data);
+    // アクセストークンや認証レスポンスをクライアントへ返さない。
+    return Response.json(
+        response.ok
+            ? { ok: true, expires_in: data.expires_in }
+            : { error: data.error, error_description: data.error_description },
+        { status: response.status }
+    );
 }
 
 // import { NextResponse } from "next/server";
