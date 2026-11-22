@@ -53,6 +53,20 @@ export default function Musicpage() {
         //曲を追加
         setSelectedTracks([...selectedTracks, track]);
     }
+    const handleNextTrack = async () => {
+        const response = await fetch("/api/spotify/player/next", {
+            method: "POST",
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.error || "次の曲に進めませんでした");
+            return;
+        }
+
+        alert("次の曲に進んだよ！");
+    };
     return (
         <main>
             <h1>Music Serach</h1>
@@ -80,6 +94,9 @@ export default function Musicpage() {
                 </div>
             ))}
             <h2>選択した曲</h2>
+            <button onClick={handleNextTrack}>
+                次の曲 ▶
+            </button>
 
             {selectedTracks.map((track) => (
                 <div key={track.id}>
