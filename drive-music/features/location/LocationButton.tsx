@@ -49,9 +49,21 @@ type AreaResult = {
     name?: string;
 };
 
+export type DriveContext = {
+    areaName: string;
+    areaCategory: string;
+    timeOfDay: string;
+    weather: string;
+    temperature: number;
+};
+
+type LocationButtonProps = {
+    onContextChange: (context: DriveContext | null) => void;
+};
+
 const AREA_API_URL = "http://localhost:8080/api/areas/check.php";
 
-export default function LocationButton() {
+export default function LocationButton({ onContextChange }: LocationButtonProps) {
     const [message, setMessage] = useState("");
     const [weather, setWeather] = useState<Weather | null>(null);
     const [weatherMessage, setWeatherMessage] = useState("");
@@ -177,6 +189,21 @@ export default function LocationButton() {
         setCurrentTime(new Date());
     }, []);
     const timeOfDay = currentTime ? getTimeOfDay(currentTime) : "";
+
+    useEffect(() => {
+        if (!weather || !areaResult || !currentTime) {
+            onContextChange(null);
+            return;
+        }
+
+        onContextChange({
+            areaName: areaResult.name ?? areaResult.category,
+            areaCategory: areaResult.category,
+            timeOfDay,
+            weather: describeWeather(weather.weatherCode),
+            temperature: weather.temperature,
+        });
+    }, [areaResult, currentTime, onContextChange, timeOfDay, weather]);
 
     return (
         <>
