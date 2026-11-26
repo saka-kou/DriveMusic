@@ -1,4 +1,473 @@
-.page {
-  width: min(100% - 2rem, 48rem);
-  margin: 3rem auto;
+.scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #ffe166;
+}
+
+.sky {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #bce7fc;
+}
+
+.skyEdge {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 4.8%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.mountains {
+  position: absolute;
+  z-index: 3;
+  top: 23.8%;
+  left: 0;
+  width: 100%;
+  height: 10%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.roadside {
+  position: absolute;
+  z-index: 1;
+  top: 33.8%;
+  left: -0.25%;
+  width: 100.5%;
+  height: 25.5%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.sun {
+  position: absolute;
+  top: 15%;
+  right: 7%;
+  width: 16.5%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #ffab4a;
+}
+
+.mirrorStem {
+  position: absolute;
+  z-index: 4;
+  top: 3.3%;
+  left: 35%;
+  width: 5%;
+  height: 4%;
+  background: #121212;
+}
+
+.mirror {
+  position: absolute;
+  z-index: 4;
+  top: 1.1%;
+  left: 19%;
+  width: 37%;
+  height: 2.5%;
+  border-radius: 0 0 2rem 2rem;
+  background: #121212;
+}
+
+.road {
+  position: absolute;
+  z-index: 2;
+  top: 32.4%;
+  left: 4.6%;
+  width: 93.1%;
+  height: 25.9%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.windshield {
+  position: absolute;
+  z-index: 4;
+  top: 7.2%;
+  left: 4.5%;
+  display: grid;
+  width: 65%;
+  height: 9.8%;
+  place-items: center;
+  border: 0.55rem solid #121212;
+  border-radius: 1.8rem 1.8rem 1rem 1rem;
+  background: #fff;
+  color: #121212;
+  font-size: 1.36rem;
+  font-weight: 700;
+}
+
+.windshield button {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.hoodBase,
+.hoodStripe,
+.hoodSurface {
+  position: absolute;
+  z-index: 3;
+  left: -0.25%;
+  width: 100.5%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.hoodBase {
+  top: 54.1%;
+  height: 45.9%;
+}
+
+.hoodStripe {
+  top: 55.75%;
+  height: 44.25%;
+}
+
+.hoodSurface {
+  top: 58.33%;
+  height: 41.67%;
+}
+
+.steeringWheel {
+  position: absolute;
+  z-index: 5;
+  top: 60%;
+  left: 63.1%;
+  width: 39%;
+  height: 33.5%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.wheelLines {
+  position: absolute;
+  z-index: 4;
+  top: 62.1%;
+  left: 59%;
+  width: 15%;
+  height: 3.4%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.musicCard {
+  position: absolute;
+  z-index: 6;
+  top: 61.1%;
+  left: 3.7%;
+  width: 54.7%;
+  height: 14.8%;
+  padding: 0.5rem;
+  border: 0.5rem solid #171717;
+  border-radius: 1rem;
+  background: #fffdf5;
+  box-shadow: 0 0.25rem 0 #757575;
+  color: #121212;
+}
+
+.trackPreview {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: 62%;
+  font-size: 0.65rem;
+}
+
+.albumMock {
+  display: block;
+  width: 1.94rem;
+  height: 1.94rem;
+  flex: 0 0 1.94rem;
+  border-radius: 0.38rem;
+  object-fit: cover;
+}
+
+.trackTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.trackTitle strong,
+.trackTitle small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.progress {
+  height: 2px;
+  margin: 0.1rem 0 0.4rem;
+  background: linear-gradient(90deg, #121212 40%, #ffcd00 40%);
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.3rem;
+}
+
+.controls button {
+  width: 31%;
+  min-height: 1.55rem;
+  border: 0;
+  border-radius: 0.45rem;
+  background: #fff;
+  color: #422e00;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.weather {
+  position: absolute;
+  z-index: 4;
+  top: 78.1%;
+  left: 3.7%;
+  display: flex;
+  align-items: center;
+  height: 5.8%;
+  gap: 0.25rem;
+  padding: 0.3rem;
+  border: 0.35rem solid #515151;
+  border-radius: 0.6rem;
+  background: #1d1d1d;
+  color: white;
+  font-size: 0.72rem;
+}
+
+.locationPill,
+.temperaturePill {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  height: 100%;
+  padding-inline: 0.35rem;
+  border-radius: 0.35rem;
+  background: #313131;
+}
+
+.temperaturePill {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.navArt {
+  position: fixed;
+  z-index: 9;
+  bottom: 0;
+  left: 50%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  width: min(79.2vw, 311px);
+  height: var(--mobile-footer-height);
+  padding: 0.35rem 0.25rem;
+  border-radius: 1rem 1rem 1.1rem 1.1rem;
+  background: #518561;
+  transform: translateX(-50%);
+}
+
+.navArt a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  color: #fffdf5;
+  font-size: 0.62rem;
+  text-decoration: none;
+}
+
+.navIcon {
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.activeNav {
+  margin-top: -1rem;
+  border: 0.3rem solid #fffdf5;
+  border-radius: 50%;
+  background: #78c48f;
+}
+
+.shade {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  background: rgb(18 18 18 / 36%);
+}
+
+.dialog {
+  position: absolute;
+  z-index: 11;
+  top: 24.8%;
+  left: 4.1%;
+  width: 91.8%;
+  height: 50.5%;
+  padding: 4.5rem 1.2rem 1.3rem;
+  border: 0.3rem solid #ffcd00;
+  border-radius: 1.9rem;
+  background: #fffdf5;
+  color: #121212;
+  text-align: center;
+}
+
+.close {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.8rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 0;
+  background: transparent;
+  color: #121212;
+  font-size: 1.8rem;
+}
+
+.tabs {
+  position: absolute;
+  top: 4.1rem;
+  left: 12%;
+  display: flex;
+  width: 76%;
+  height: 2.7rem;
+  align-items: center;
+  padding: 0.25rem;
+  border-radius: 2rem;
+  background: #ffcd00;
+}
+
+.tabs button {
+  width: 50%;
+  height: 100%;
+  border: 0;
+  border-radius: 2rem;
+  background: transparent;
+  color: #121212;
+  font-size: 0.7rem;
+}
+
+.tabs .selectedTab {
+  background: #fffdf5;
+}
+
+.dialogTitle {
+  position: absolute;
+  top: 7.8rem;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.inviteArt {
+  position: absolute;
+  top: 10rem;
+  left: 22%;
+  display: block;
+  width: 56%;
+  height: 38%;
+  object-fit: contain;
+}
+
+.roomAction {
+  position: absolute;
+  bottom: 1.55rem;
+  left: 23.5%;
+  width: 53%;
+  height: 3.1rem;
+  border: 0;
+  border-radius: 2rem;
+  background: #518561;
+  color: #fffdf5;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.qrCode {
+  position: absolute;
+  top: 34.2%;
+  left: 50%;
+  display: block;
+  width: 47.1%;
+  height: auto;
+  transform: translateX(-50%);
+}
+
+.scanMock {
+  position: absolute;
+  top: 30.9%;
+  left: 20.5%;
+  display: block;
+  width: 59%;
+  aspect-ratio: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.scanMock img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.memberList {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.member {
+  position: absolute;
+  display: block;
+  width: 29.64%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: contain;
+}
+
+.memberOne {
+  top: 37.44%;
+  left: 21.88%;
+}
+
+.memberTwo {
+  top: 34.88%;
+  left: 44.6%;
+}
+
+.memberThree {
+  top: 53.02%;
+  left: 34.35%;
+}
+
+.memberPlus {
+  position: absolute;
+  top: 50.46%;
+  left: 56.8%;
+  display: grid;
+  width: 20.8%;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  background: #97e5ec;
+  font-size: 1.3rem;
+  pointer-events: auto;
 }

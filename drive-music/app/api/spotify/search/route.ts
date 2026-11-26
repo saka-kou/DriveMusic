@@ -1,67 +1,90 @@
-export async function GET(request: Request) {
-    // URLから検索ワードを取得
-    const { searchParams } = new URL(request.url);
-    const query = searchParams.get("q");
+import { NextRequest, NextResponse } from "next/server";
+import { fetchSpotifyApi } from "@/app/lib/spotifyUserAuth";
+
+export async function GET(request: NextRequest) {
+    const query = new URL(request.url).searchParams.get("q")?.trim();
 
     if (!query) {
-        return Response.json(
-            { error: "検索ワードがありません" },
+        return NextResponse.json(
+            { error: "検索ワードを入力してください。" },
             { status: 400 }
         );
     }
 
-    // Spotify の認証情報はサーバー専用の環境変数から取得する。
-    const clientId = process.env.SPOTIFY_CLIENT_ID?.trim();
-    const clientSecret = process.env.SPOTIFY_CLIENT_SECRET?.trim();
+    const clientId = process.env.SPOTIFY_CLIENT_ID;
+    const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
-        return Response.json(
-            {
-                error: "Spotify API の認証情報が設定されていません",
-                error_description:
-                    "プロジェクト直下の .env.local に SPOTIFY_CLIENT_ID と SPOTIFY_CLIENT_SECRET を設定してください。",
-            },
+        return NextResponse.json(
+            { error: "SpotifyのAPI認証情報が設定されていません。" },
             { status: 500 }
         );
     }
 
-    //アクセストークンを取得
-    const auth = Buffer.from(
-        `${clientId}:${clientSecret}`
-    ).toString("base64");
+    try {
+        // Public catalog search: Client Credentials is appropriate here.
+        const credentials = Buffer.from(
+            `${clientId}:${clientSecret}`
+        ).toString("base64");
 
-    const tokenResponse = await fetch(
-        "https://accounts.spotify.com/api/token",
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Basic ${auth}`,
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: "grant_type=client_credentials",
-            cache: "no-store",
+        const tokenResponse = await fetchSpotifyApi(
+            "https://accounts.spotify.com/api/token",
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Basic ${credentials}`,
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({ grant_type: "client_credentials" }),
+            }
+        );
+        const tokenData = await tokenResponse.json().catch(() => ({}));
+
+        if (!tokenResponse.ok || typeof tokenData.access_token !== "string") {
+            const response = NextResponse.json(
+                {
+                    error:
+                        tokenData.error_description ??
+                        tokenData.error ??
+                        "Spotifyの検索用トークンを取得できませんでした。",
+                },
+                { status: tokenResponse.status || 502 }
+            );
+            const retryAfter = tokenResponse.headers.get("Retry-After");
+            if (retryAfter) response.headers.set("Retry-After", retryAfter);
+            return response;
         }
-    );
 
-    const tokenData = await tokenResponse.json();
+        const searchUrl = new URL("https://api.spotify.com/v1/search");
+        searchUrl.searchParams.set("q", query);
+        searchUrl.searchParams.set("type", "track");
+        searchUrl.searchParams.set("limit", "10");
 
-    if (!tokenResponse.ok) {
-        return Response.json(tokenData, {
-            status: tokenResponse.status,
-        });
-    }
-    // 曲を検索
-    const spotifyResponse = await fetch(
-        `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=10`,
-        {
+        const spotifyResponse = await fetchSpotifyApi(searchUrl.toString(), {
             headers: {
                 Authorization: `Bearer ${tokenData.access_token}`,
             },
-            cache: "no-store",
-        }
-    );
-    const data = await spotifyResponse.json();
-    return Response.json(data, {
-        status: spotifyResponse.status,
-    });
+        });
+        const data = await spotifyResponse.json().catch(() => ({}));
+        const response = NextResponse.json(
+            spotifyResponse.ok
+                ? data
+                : {
+                      error:
+                          data.error?.message ??
+                          "Spotifyで楽曲を検索できませんでした。",
+                      detail: data,
+                  },
+            { status: spotifyResponse.status }
+        );
+
+        const retryAfter = spotifyResponse.headers.get("Retry-After");
+        if (retryAfter) response.headers.set("Retry-After", retryAfter);
+        return response;
+    } catch {
+        return NextResponse.json(
+            { error: "Spotifyへの接続に失敗しました。時間をおいて再度お試しください。" },
+            { status: 502 }
+        );
+    }
 }
