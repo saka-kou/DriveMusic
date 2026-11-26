@@ -1,26 +1,130 @@
 @import "tailwindcss";
 
 :root {
-  --background: #171717;
-  --foreground: #ffffff;
+  font-size: min(4.07vw, 16px);
+  --background: #fffdf5;
+  --foreground: #121212;
+  --main: #ffcd00;
+  --sub: #518561;
+  --accent: #97e5ec;
+  --mobile-footer-height: min(19.85vw, 78px);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: "M PLUS 1 Code", "Hiragino Kaku Gothic ProN", sans-serif;
+  --font-mono: "M PLUS 1 Code", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
+  min-height: 100dvh;
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "M PLUS 1 Code", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.spotify-player {
+  margin-top: 0.6rem;
+  padding: 0.9rem;
+  border: 1px solid #e5dfca;
+  border-radius: 0.9rem;
+  background: #fffdf5;
+}
+
+.player .spotify-player {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.spotify-player h2 {
+  display: none;
+}
+
+.spotify-player > p {
+  display: none;
+}
+
+.spotify-player > p[role="alert"] {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0.45rem 0.8rem;
+  background: #fffdf5;
+  color: #b00020 !important;
+  font-size: 0.68rem;
+}
+
+.spotify-player .now-playing {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.15rem 0.65rem;
+}
+
+.spotify-player .now-playing > img {
+  grid-row: span 2;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 0.45rem;
+  object-fit: cover;
+}
+
+.spotify-player .now-playing > h3,
+.spotify-player .now-playing > p {
+  grid-column: 2;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spotify-player .now-playing > h3 {
+  font-size: 0.8rem;
+}
+
+.spotify-player .now-playing > p {
+  color: #666;
+  font-size: 0.68rem;
+}
+
+.spotify-player .now-playing > button {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  margin: 0 !important;
+  padding: 0.55rem 0.8rem !important;
+  background: #518561 !important;
+  color: #fffdf5 !important;
+  font-size: 0.72rem;
+}
+
+.spotify-player .now-playing > div:last-child {
+  display: none;
+}
+
+.spotify-player .now-playing input[type="range"] {
+  min-width: 0;
+  flex: 1;
+  accent-color: #518561;
+}
+
+.spotify-player .spotify-track-list {
+  display: none;
 }
