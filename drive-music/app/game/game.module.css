@@ -1,10 +1,113 @@
-.page {
-  width: min(100% - 2rem, 48rem);
-  margin: 3rem auto;
+.canvas {
+  background: #fffdf5;
+  color: #121212;
 }
 
-.heading {
-  margin-bottom: 0.75rem;
-  font-size: 2rem;
+.wheel {
+  position: absolute;
+  z-index: 0;
+  top: 8.1%;
+  left: 0;
+  width: 46.3%;
+  height: 91.9%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.header {
+  position: absolute;
+  z-index: 1;
+  top: 10.5%;
+  left: 9.2%;
+  width: 84%;
+  transform: rotate(-7deg);
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 2.25rem;
   font-weight: 700;
+  line-height: 1.1;
+}
+
+.header p {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+}
+
+.games {
+  position: absolute;
+  z-index: 2;
+  inset: 23.2% 2% 11% 18%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.games a {
+  display: flex;
+  height: 22%;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 0.6rem 1.2rem 0.6rem 3rem;
+  border-radius: 1.4rem;
+  box-shadow: 0 0.35rem 0 rgb(0 0 0 / 20%);
+  color: #fffdf5;
+  text-decoration: none;
+  transform: rotate(-5deg);
+}
+
+.games a:nth-child(2) {
+  transform: rotate(-4deg);
+}
+
+.games a:nth-child(3) {
+  transform: rotate(1deg);
+}
+
+.games a:nth-child(4) {
+  transform: rotate(7deg);
+}
+
+.games strong {
+  font-size: 1rem;
+}
+
+.games small {
+  font-size: 0.7rem;
+}
+
+.orange {
+  background: #e95432;
+}
+
+.yellow {
+  background: #ffd333;
+  color: #121212 !important;
+}
+
+.green {
+  background: #5da44c;
+}
+
+.blue {
+  background: #59c0cb;
+}
+
+.back {
+  position: absolute;
+  z-index: 3;
+  top: 2.5%;
+  left: 3.5%;
+  display: grid;
+  width: 2.4rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid #121212;
+  border-radius: 50%;
+  background: #ffcd00;
+  color: #121212;
+  font-size: 1.3rem;
+  text-decoration: none;
 }
