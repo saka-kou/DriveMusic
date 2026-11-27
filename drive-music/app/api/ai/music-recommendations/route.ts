@@ -6,22 +6,42 @@ type RecommendationRequest = {
     temperature?: unknown;
 };
 
-type OpenAIResponse = {
-    status?: string;
-    output?: Array<{
-        content?: Array<{ type?: string; text?: string }>;
+type GeminiResponse = {
+    candidates?: Array<{
+        content?: { parts?: Array<{ text?: string }> };
+        finishReason?: string;
     }>;
+    error?: { code?: number; status?: string; message?: string };
 };
 
 function isShortText(value: unknown): value is string {
     return typeof value === "string" && value.trim().length > 0 && value.length <= 100;
 }
 
+async function fetchGeminiWithRetry(
+    url: string,
+    init: RequestInit,
+    maxAttempts = 3,
+): Promise<Response> {
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+        try {
+            const response = await fetch(url, init);
+            if (response.status !== 503 || attempt === maxAttempts) return response;
+        } catch (error) {
+            if (attempt === maxAttempts) throw error;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 600 * 2 ** (attempt - 1)));
+    }
+
+    throw new Error("Gemini API の再試行に失敗しました。");
+}
+
 export async function POST(request: Request) {
-    const apiKey = process.env.OPENAI_API_KEY?.trim();
+    const apiKey = process.env.GEMINI_API_KEY?.trim();
     if (!apiKey) {
         return Response.json(
-            { error: "OpenAI API キーが設定されていません。プロジェクト直下の .env.local を確認してください。" },
+            { error: "Gemini API キーが設定されていません。.env.local に GEMINI_API_KEY を設定してください。" },
             { status: 500 },
         );
     }
@@ -44,31 +64,30 @@ export async function POST(request: Request) {
         return Response.json({ error: "場所・時間帯・天気の情報が不足しています。" }, { status: 400 });
     }
 
-    const prompt = `${body.areaName}（${body.areaCategory}）・${body.timeOfDay}・${body.weather}・気温${body.temperature}℃のドライブに合う楽曲を5曲提案してください。`;
+    const prompt = `${body.areaName}（${body.areaCategory}）・${body.timeOfDay}・${body.weather}・気温${body.temperature}℃のドライブに合う、実在する楽曲を2曲提案してください。`;
+    const model = process.env.GEMINI_MODEL?.trim() || "gemini-3.8-flash";
 
     try {
-        const response = await fetch("https://api.openai.com/v1/responses", {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${apiKey}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: process.env.OPENAI_MODEL || "gpt-6-luna",
-                store: false,
-                input: [
-                    {
-                        role: "system",
-                        content: "あなたはドライブ向けの音楽キュレーターです。実在する楽曲を選び、日本語で簡潔に回答してください。ユーザーに会話文は返さず、指定されたJSONだけを返してください。",
+        const response = await fetchGeminiWithRetry(
+            `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-goog-api-key": apiKey,
+                },
+                body: JSON.stringify({
+                    systemInstruction: {
+                        parts: [
+                            {
+                                text: "あなたはドライブ向けの音楽キュレーターです。会話文や説明は返さず、楽曲2曲のJSONだけを返してください。",
+                            },
+                        ],
                     },
-                    { role: "user", content: prompt },
-                ],
-                text: {
-                    format: {
-                        type: "json_schema",
-                        name: "music_recommendations",
-                        strict: true,
-                        schema: {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseJsonSchema: {
                             type: "object",
                             properties: {
                                 songs: {
@@ -88,31 +107,33 @@ export async function POST(request: Request) {
                             additionalProperties: false,
                         },
                     },
-                },
-            }),
-            cache: "no-store",
-        });
+                }),
+                cache: "no-store",
+            },
+        );
 
-        const data = (await response.json()) as OpenAIResponse & {
-            error?: { message?: string };
-        };
+        const data = (await response.json()) as GeminiResponse;
         if (!response.ok) {
-            console.error("OpenAI recommendation request failed:", response.status, data.error?.message);
+            const errorMessage =
+                response.status === 401 || response.status === 403
+                    ? "Gemini API キーを認証できません。Google AI Studio のキー設定を確認してください。"
+                    : response.status === 503
+                        ? "Gemini API が一時的に混み合っています。少し待ってからもう一度お試しください。"
+                        : response.status === 429
+                            ? "Gemini API の利用上限に達しました。Google AI Studio の使用量と上限を確認してください。"
+                            : data.error?.message ?? "Gemini API で楽曲提案に失敗しました。";
+            console.error("Gemini recommendation request failed:", response.status, data.error?.status);
             return Response.json(
-                { error: "楽曲の提案を取得できませんでした。OpenAI API の設定を確認してください。" },
-                { status: response.status === 401 ? 502 : response.status },
+                { error: errorMessage, code: data.error?.status },
+                { status: response.status },
             );
         }
 
-        if (data.status !== "completed") {
-            return Response.json({ error: "楽曲の提案が完了しませんでした。もう一度お試しください。" }, { status: 502 });
-        }
-
-        const outputText = data.output
-            ?.flatMap((item) => item.content ?? [])
-            .find((item) => item.type === "output_text")?.text;
+        const outputText = data.candidates
+            ?.flatMap((candidate) => candidate.content?.parts ?? [])
+            .find((part) => typeof part.text === "string")?.text;
         if (!outputText) {
-            return Response.json({ error: "AIの応答を読み取れませんでした。" }, { status: 502 });
+            return Response.json({ error: "Gemini の応答を読み取れませんでした。" }, { status: 502 });
         }
 
         const result: unknown = JSON.parse(outputText);
@@ -121,7 +142,7 @@ export async function POST(request: Request) {
             result === null ||
             !("songs" in result) ||
             !Array.isArray(result.songs) ||
-            result.songs.length !== 5 ||
+            result.songs.length !== 2 ||
             !result.songs.every(
                 (song) =>
                     typeof song === "object" &&
@@ -130,12 +151,12 @@ export async function POST(request: Request) {
                     "artist" in song && typeof song.artist === "string",
             )
         ) {
-            return Response.json({ error: "AIの楽曲データが正しい形式ではありません。" }, { status: 502 });
+            return Response.json({ error: "Gemini の楽曲データが正しい形式ではありません。" }, { status: 502 });
         }
 
         return Response.json({ songs: result.songs });
     } catch (error) {
-        console.error("OpenAI recommendation request error:", error);
-        return Response.json({ error: "OpenAI API に接続できませんでした。" }, { status: 502 });
+        console.error("Gemini recommendation request error:", error);
+        return Response.json({ error: "Gemini API に接続できませんでした。" }, { status: 502 });
     }
 }

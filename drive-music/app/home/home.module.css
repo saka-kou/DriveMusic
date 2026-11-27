@@ -2,3 +2,58 @@
   width: min(100% - 2rem, 48rem);
   margin: 3rem auto;
 }
+
+.playlist {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.track {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: rgb(255 255 255 / 8%);
+}
+
+.track img,
+.placeholder {
+  width: 5rem;
+  height: 5rem;
+  flex: none;
+  border-radius: 0.5rem;
+  object-fit: cover;
+}
+
+.placeholder {
+  display: grid;
+  place-items: center;
+  background: rgb(255 255 255 / 12%);
+  font-size: 2rem;
+}
+
+.track h3,
+.track p {
+  margin: 0;
+}
+
+.track h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.track p {
+  margin-top: 0.25rem;
+}
+
+.deleteButton {
+  margin-left: auto;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}

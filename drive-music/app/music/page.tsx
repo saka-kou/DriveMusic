@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Track = {
     id: string;
@@ -22,6 +22,26 @@ export default function Musicpage() {
     const [tracks, setTracks] = useState<Track[]>([]);
     //検索処理
     const [selectedTracks, setSelectedTracks] = useState<Track[]>([]);
+    const [playlistLoaded, setPlaylistLoaded] = useState(false);
+
+    useEffect(() => {
+        try {
+            const storedPlaylist = localStorage.getItem("drive-music-playlist");
+            if (storedPlaylist) {
+                const parsed = JSON.parse(storedPlaylist) as Track[];
+                if (Array.isArray(parsed)) setSelectedTracks(parsed);
+            }
+        } catch {
+            localStorage.removeItem("drive-music-playlist");
+        } finally {
+            setPlaylistLoaded(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!playlistLoaded) return;
+        localStorage.setItem("drive-music-playlist", JSON.stringify(selectedTracks));
+    }, [playlistLoaded, selectedTracks]);
     const searchMusic = async () => {
         try {
             const response = await fetch(
@@ -91,8 +111,15 @@ export default function Musicpage() {
 
                     <p>{track.name}</p>
                     <p>{track.artists[0]?.name}</p>
+                    <button
+                        type="button"
+                        aria-label={`${track.name}をプレイリストから削除`}
+                        onClick={() => setSelectedTracks((current) => current.filter((item) => item.id !== track.id))}
+                    >
+                        削除
+                    </button>
                 </div>
             ))}
         </main>
     );
-}  
+}
